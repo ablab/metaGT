@@ -1,5 +1,11 @@
 **Assembly and quantification metatranscriptome using metagenome data**.
 
+## Introduction
+
+**metaGT** is a bioinformatics analysis pipeline used to improving and quantification metatranscriptome assembly using metagenome data. The pipeline supports Illumina sequencing data and complete metagenome and metatranscriptome assemblies. The pipeline involves the alignment of metatranscriprome assembly to the metagenome assembly with further extracting CDSs, which is covered by transcripts.
+
+The pipeline is built using Nextflow, a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible. The Nextflow DSL2 implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies.
+
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A520.04.0-brightgreen.svg)](https://www.nextflow.io/)
 
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](https://bioconda.github.io/)
