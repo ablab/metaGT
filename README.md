@@ -1,5 +1,7 @@
 **Assembly and quantification metatranscriptome using metagenome data**.
 
+Version: see VERSION
+
 ## Introduction
 
 **metaGT** is a bioinformatics analysis pipeline used for improving and quantification metatranscriptome assembly using metagenome data. The pipeline supports Illumina sequencing data and complete metagenome and metatranscriptome assemblies. The pipeline involves the alignment of metatranscriprome assembly to the metagenome assembly with further extracting CDSs, which are covered by transcripts.
