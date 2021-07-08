@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/nf-core/graphamr/master/nextflow_schema.json",
+    "$id": "https://raw.githubusercontent.com/nf-core/metaGT/master/nextflow_schema.json",
     "title": "metaGT pipeline parameters",
     "description": "Assembly and quantification metatranscriptome using metagenome data",
     "type": "object",

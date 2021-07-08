@@ -4,16 +4,16 @@
   |\\ | |__  __ /  ` /  \\ |__) |__         }  {
   | \\| |       \\__, \\__/ |  \\ |___     \\`-._,-`-,
                                         `._,._,'
-  nf-core/graphamr v${version}
+  ablab/metaGT v${version}
 ----------------------------------------------------
 
 Run Name: $runName
 
 <% if (success){
-    out << "## nf-core/graphamr execution completed successfully! ##"
+    out << "## ablab/metaGT execution completed successfully! ##"
 } else {
     out << """####################################################
-## nf-core/graphamr execution completed unsuccessfully! ##
+## ablab/metaGT execution completed unsuccessfully! ##
 ####################################################
 The exit status of the task that caused the workflow execution to fail was: $exitStatus.
 The full error message was:
@@ -36,5 +36,5 @@ Pipeline Configuration:
 <% out << summary.collect{ k,v -> " - $k: $v" }.join("\n") %>
 
 --
-nf-core/graphamr
-https://github.com/nf-core/graphamr
+ablab/metaGT
+https://github.com/ablab/metaGT

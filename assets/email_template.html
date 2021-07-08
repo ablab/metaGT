@@ -4,21 +4,21 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta name="description" content="nf-core/graphamr: Antimicrobial Resistance Gene Detection from Metagenome Assembly Graphs">
-  <title>nf-core/graphamr Pipeline Report</title>
+  <meta name="description" content="ablab/metaGT: Assembly and quantification metatranscriptome using metagenome data">
+  <title>ablab/metaGT Pipeline Report</title>
 </head>
 <body>
 <div style="font-family: Helvetica, Arial, sans-serif; padding: 30px; max-width: 800px; margin: 0 auto;">
 
 <img src="cid:nfcorepipelinelogo">
 
-<h1>nf-core/graphamr v${version}</h1>
+<h1>ablab/metaGT v${version}</h1>
 <h2>Run Name: $runName</h2>
 
 <% if (!success){
     out << """
     <div style="color: #a94442; background-color: #f2dede; border-color: #ebccd1; padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px;">
-        <h4 style="margin-top:0; color: inherit;">nf-core/graphamr execution completed unsuccessfully!</h4>
+        <h4 style="margin-top:0; color: inherit;">ablab/metaGT execution completed unsuccessfully!</h4>
         <p>The exit status of the task that caused the workflow execution to fail was: <code>$exitStatus</code>.</p>
         <p>The full error message was:</p>
         <pre style="white-space: pre-wrap; overflow: visible; margin-bottom: 0;">${errorReport}</pre>
@@ -27,7 +27,7 @@
 } else {
     out << """
     <div style="color: #3c763d; background-color: #dff0d8; border-color: #d6e9c6; padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px;">
-        nf-core/graphamr execution completed successfully!
+        ablab/metaGT execution completed successfully!
     </div>
     """
 }
@@ -44,8 +44,8 @@
     </tbody>
 </table>
 
-<p>nf-core/graphamr</p>
-<p><a href="https://github.com/nf-core/graphamr">https://github.com/nf-core/graphamr</a></p>
+<p>ablab/metaGT</p>
+<p><a href="https://github.com/ablab/metaGT">https://github.com/ablab/metaGT</a></p>
 
 </div>
 
