@@ -167,7 +167,7 @@ workflow {
     
     COVERED_CDS(ch_align, ch_genome_gff, PROKKA.out.ffn)
     TRANSDECODER(MINIMAP2.out.unaligned_transcripts)
-    MMSEQS_CLUSTER( COVERED_CDS.out.fasta, TRANSDECODER.out.cds) 
+    MMSEQS_CLUSTER( COVERED_CDS.out.fasta, TRANSDECODER.out.cds, ch_transcriptome) 
     
     if (params.rna_reads) {
         include { KALLISTO_INDEX; KALLISTO_QUANT } from './modules/local/kallisto' addParams(options: [:])
