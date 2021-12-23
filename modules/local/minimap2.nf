@@ -19,19 +19,19 @@ process MINIMAP2 {
 
 
     output:
-    tuple val(meta), path('*.sam'), emit: sam
-    tuple val(meta_t), path('*.unaligned_transcripts.fasta'), emit: unaligned_transcripts
+    tuple val(meta), path('*.bam'), emit: bam
+    tuple val(meta_t), path('*.all_transcripts.fasta'), emit: transcripts
 
     script:
     def prefix  = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
 
     """
 
-    minimap2 -a $genome $transcriptome > ${prefix}.align.sam
+    minimap2 -aY --MD $genome $transcriptome > ${prefix}.align.sam
 
-    extract_unaligned_transcripts.py ${prefix}.align.sam $transcriptome ${meta_t.id}.unaligned.fasta
+    samtools sort ${prefix}.align.sam -o ${prefix}.align.sorted.bam
 
-    change_name.py ${meta_t.id}.unaligned.fasta ${meta_t.id}.unaligned_transcripts.fasta
+    change_name.py  $transcriptome ${meta_t.id}.all_transcripts.fasta
 
     """
   //  TransDecoder.LongOrfs -t ${meta_t.id}.unaligned_transcripts.fasta --output_dir ./ 

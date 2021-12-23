@@ -6,79 +6,82 @@
 # See file LICENSE for details.
 ############################################################################
 
-import os
-import subprocess
-import sys
-import argparse
-from collections import defaultdict
-import pysam
-import gffutils
-from common import *
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
+import pysam
+import gffutils
+import sys
+import argparse
 
-def count_coverage(chr_id, start, end, bam):
+
+def count_coverage(chr_id, start, end, bam, gene_seq):
     gene_len = end - start + 1
-    coverage = [0 for _ in range(gene_len + 1)]
-    for a in bam.fetch(chr_id, start, end):
+    coverage = [0 for _ in range(gene_len)]
+    for a in bam.fetch(chr_id, start - 1, end):
         covered_start = max(a.reference_start + 1, start)
         covered_end = min(a.reference_end + 1, end)
-        for pos in range(covered_start, covered_end + 1):
+        i = -1
+        for pos in range(covered_start, covered_end):
             coverage[pos - start] += 1
-    return 1 - (coverage.count(0) / gene_len)
+            i += 1
+            if a.get_aligned_pairs(with_seq = True)[covered_start-a.reference_start+a.query_alignment_start-1+i][2] is None:
+                continue
+            else:
+                gene_seq[pos - start] = a.get_aligned_pairs(with_seq = True)[covered_start-a.reference_start+a.query_alignment_start-1+i][2]
 
-def get_gene_stats(gene_db, bam):
+    return 1 - (coverage.count(0) / gene_len), gene_seq
+
+def get_gene_stats(gene_db, bam, genome_fasta, threshold, file):
     gene_cov_dict = {}
+    gene_seq_dict = {}
+    strand = True
     for g in gene_db.features_of_type('CDS', order_by=('seqid', 'start')):
         gene_name = g.id
-        gene_cov = count_coverage(g.seqid, g.start, g.end, bam)
+        if g.strand == '-':
+            strand = False
+        gene_seq = list(g.sequence(genome_fasta, use_strand = strand))
+        #print(g.id, g.seqid, g.start, g.end)
+        gene_cov, gene_seq = count_coverage(g.seqid, g.start, g.end, bam, gene_seq)
         gene_cov_dict[gene_name] = gene_cov
+        if gene_cov > threshold:
+            extract_genes(gene_seq, g, file)
     print("Genes processed %d" % len(gene_cov_dict))
     return gene_cov_dict
 
+def extract_genes(gene_seq, gene, file):
+    name = ''
+    if 'Name' in gene.attributes:
+            name = gene.attributes["Name"][0]
 
-def count_higher_than(container, value):
-    count = 0
-    for c in container:
-        if c > value:
-            count += 1
-    return count
-
-def extract_genes(df, genes, new_genes):
-    name_genes = df.keys()
-    genes = SeqIO.parse(genes, 'fasta')
-    new_fasta = []
-    for i in genes:
-        if i.id in name_genes:
-            new_fasta.append(i)
-    SeqIO.write(new_fasta, new_genes + '.fasta', "fasta")
+    rec = SeqRecord(Seq("".join(str(x) for x in gene_seq)),
+                id=gene.id, description=name)
+    SeqIO.write(rec, file, "fasta")
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--output", "-o", type=str, help="output file", default="gtf_stats.tsv")
     parser.add_argument("--gff", "-g", type=str, help="gene db", required=True)
     parser.add_argument("--bam", "-b", type=str, help="bam to count coverage", required=True)
-    parser.add_argument("--genes", "-r", type=str, help="initial file with covered genes")
+    parser.add_argument("--genome", "-f", type=str, help="initial file with covered genes", required=True)
+    parser.add_argument("--threshold", "-t", type=float, help="threshold", default=0.5)
     args = parser.parse_args()
     return args
-
 
 def main():
     args = parse_args()
     gffutils.create_db(args.gff, 'db')
     gffutils_db = gffutils.FeatureDB('db', keep_order=True)
     bam = pysam.AlignmentFile(args.bam, "rb")
-    genes = args.genes
-    gene_cov_dict = get_gene_stats(gffutils_db, bam)
-    cov_values = gene_cov_dict.values()
-#    for v in [0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1]:
-#        print("> %.2f: %d" % (v, count_higher_than(cov_values, v)))
+    genome= args.genome
+    t = float(args.threshold)
+    f = open(args.output + '.fasta', 'w')
+    f = open(args.output + '.fasta', 'a')
+    gene_cov_dict = get_gene_stats(gffutils_db, bam, genome, t, f)
     with open(args.output+'.csv', 'w') as outf:
         for k in sorted(gene_cov_dict.keys()):
             outf.write("%s\t%.3f\n" % (k, gene_cov_dict[k]))
-    gene_cov_dict = {k: v for k, v in gene_cov_dict.items() if v > 0.49}
-    extract_genes(gene_cov_dict, genes, args.output)
+    f.close()
 
 if __name__ == "__main__":
    # stuff only to run when not called via 'import' here

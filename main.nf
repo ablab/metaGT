@@ -151,23 +151,22 @@ workflow {
     } else { 
         include { MINIMAP2 } from './modules/local/minimap2' addParams(options: [:])
         MINIMAP2(ch_genome, ch_transcriptome)
-        ch_align = MINIMAP2.out.sam
+        ch_align = MINIMAP2.out.bam
     }
     
-    PROKKA(ch_genome) 
     if (params.gff) {
         ch_genome_gff = Channel.fromPath(params.gff, checkIfExists: true)
            .map{ item -> [ [id : file(item).getBaseName(), single_end : false], item ] }
     } else {
-        //PROKKA(ch_genome) 
+        PROKKA(ch_genome) 
         ch_genome_gff = PROKKA.out.genome_gff
            }
 
     
     
-    COVERED_CDS(ch_align, ch_genome_gff, PROKKA.out.ffn)
-    TRANSDECODER(MINIMAP2.out.unaligned_transcripts)
-    MMSEQS_CLUSTER( COVERED_CDS.out.fasta, TRANSDECODER.out.cds, ch_transcriptome) 
+    COVERED_CDS(ch_align, ch_genome_gff, ch_genome)
+    TRANSDECODER(ch_transcriptome)
+    MMSEQS_CLUSTER(COVERED_CDS.out.fasta, TRANSDECODER.out.cds) 
     
     if (params.rna_reads) {
         include { KALLISTO_INDEX; KALLISTO_QUANT } from './modules/local/kallisto' addParams(options: [:])
