@@ -24,7 +24,7 @@ process TRANSDECODER {
     
     """
     TransDecoder.LongOrfs -t $fasta --output_dir ./ 
-    mv ./longest_orfs.cds ${prefix}_cds_from_unaligned_transcripts.fasta
+    mv ./longest_orfs.cds ${prefix}_cds_from_all_transcripts.fasta
     
     """
 }
