@@ -104,13 +104,15 @@ include { PROKKA } from './modules/local/prokka' addParams(options: [:])
 include { COVERED_CDS } from './modules/local/covered_cds' addParams(options: [:])
 include { MMSEQS_CLUSTER } from './modules/local/mmseqs' addParams(options: [:])
 include { TRANSDECODER } from './modules/local/transdecoder' addParams(options: [:])
-
+include { ASSEMBLY_TRANSCRIPTOME } from './subworkflows/local/assembly_transcriptome.nf' addParams(options : [:])
+include { ASSEMBLY_GENOME } from './subworkflows/local/assembly_genome.nf' addParams(options : [:])
+include { MINIMAP2 } from './modules/local/minimap2' addParams(options: [:])
+include { KALLISTO_INDEX; KALLISTO_QUANT } from './modules/local/kallisto' addParams(options: [:])
 
 workflow {
     
 
     if (params.rna_reads) {
-        include { ASSEMBLY_TRANSCRIPTOME } from './subworkflows/local/assembly_transcriptome.nf' addParams(options : [:])
         input_rna_reads =
             Channel.fromFilePairs(params.rna_reads,size: -1)
             .map{ item -> [ [id : item[0], yaml : false], item[1] ] }
@@ -127,9 +129,8 @@ workflow {
         exit 1, "ERROR: Please check input RNA reads and transcriptome do not exist"
     }
 
-
     if (params.dna_reads) {
-        include { ASSEMBLY_GENOME } from './subworkflows/local/assembly_genome.nf' addParams(options : [:])
+
         input_reads =
             Channel.fromFilePairs(params.dna_reads,size: -1)
             .map{ item -> [ [id : item[0], yaml : false], item[1] ] }
@@ -148,8 +149,7 @@ workflow {
     if (params.sam) {
         ch_align = Channel.fromPath(params.sam, checkIfExists: true)
             .map{ item -> [ [id : file(item).getBaseName(), single_end : false], item ] }
-    } else { 
-        include { MINIMAP2 } from './modules/local/minimap2' addParams(options: [:])
+    } else {
         MINIMAP2(ch_genome, ch_transcriptome)
         ch_align = MINIMAP2.out.bam
     }
@@ -167,9 +167,8 @@ workflow {
     COVERED_CDS(ch_align, ch_genome_gff, ch_genome)
     TRANSDECODER(ch_transcriptome)
     MMSEQS_CLUSTER(COVERED_CDS.out.fasta, TRANSDECODER.out.cds) 
-    
+
     if (params.rna_reads) {
-        include { KALLISTO_INDEX; KALLISTO_QUANT } from './modules/local/kallisto' addParams(options: [:])
         KALLISTO_INDEX(MMSEQS_CLUSTER.out.rep_seq)
         KALLISTO_QUANT(KALLISTO_INDEX.out.index, input_rna_reads)
 
