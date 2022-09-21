@@ -22,15 +22,17 @@ def count_coverage(chr_id, start, end, bam, gene_seq):
         covered_start = max(a.reference_start + 1, start)
         covered_end = min(a.reference_end + 1, end)
         i = -1
+        aligned_pairs = a.get_aligned_pairs(with_seq = True)
         for pos in range(covered_start, covered_end):
             coverage[pos - start] += 1
             i += 1
-            if a.get_aligned_pairs(with_seq = True)[covered_start-a.reference_start+a.query_alignment_start-1+i][2] is None:
+            if aligned_pairs[covered_start-a.reference_start+a.query_alignment_start-1+i][2] is None:
                 continue
             else:
-                gene_seq[pos - start] = a.get_aligned_pairs(with_seq = True)[covered_start-a.reference_start+a.query_alignment_start-1+i][2]
+                gene_seq[pos - start] = aligned_pairs[covered_start-a.reference_start+a.query_alignment_start-1+i][2]
 
     return 1 - (coverage.count(0) / gene_len), gene_seq
+
 
 def get_gene_stats(gene_db, bam, genome_fasta, threshold, file):
     gene_cov_dict = {}
@@ -49,14 +51,15 @@ def get_gene_stats(gene_db, bam, genome_fasta, threshold, file):
     print("Genes processed %d" % len(gene_cov_dict))
     return gene_cov_dict
 
+
 def extract_genes(gene_seq, gene, file):
     name = ''
     if 'Name' in gene.attributes:
-            name = gene.attributes["Name"][0]
+        name = gene.attributes["Name"][0]
 
-    rec = SeqRecord(Seq("".join(str(x) for x in gene_seq)),
-                id=gene.id, description=name)
+    rec = SeqRecord(Seq("".join(str(x) for x in gene_seq)), id=gene.id, description=name)
     SeqIO.write(rec, file, "fasta")
+
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -76,7 +79,6 @@ def main():
     genome= args.genome
     t = float(args.threshold)
     f = open(args.output + '.fasta', 'w')
-    f = open(args.output + '.fasta', 'a')
     gene_cov_dict = get_gene_stats(gffutils_db, bam, genome, t, f)
     with open(args.output+'.csv', 'w') as outf:
         for k in sorted(gene_cov_dict.keys()):
