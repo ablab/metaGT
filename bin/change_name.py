@@ -1,6 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python 
+
 from Bio import SeqIO
 import sys
+
 
 fasta = SeqIO.parse(sys.argv[1], 'fasta')
 new=[]

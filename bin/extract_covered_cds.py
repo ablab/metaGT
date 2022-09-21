@@ -1,5 +1,4 @@
-#!/usr/bin/python
-#
+#!/usr/bin/env python 
 ############################################################################
 # Copyright (c) 2020 Saint Petersburg State University
 # # All Rights Reserved
@@ -13,6 +12,8 @@ import pysam
 import gffutils
 import sys
 import argparse
+import os
+from traceback import print_exc
 
 
 def count_coverage(chr_id, start, end, bam):
@@ -33,10 +34,14 @@ def get_gene_stats(gene_db, bam, genome_fasta, threshold, file):
     gene_cov_dict = {}
     gene_records = []
     strand = True
+    seqid = None
     for g in gene_db.features_of_type('CDS', order_by=('seqid', 'start')):
         gene_name = g.id
         if g.strand == '-':
             strand = False
+        if seqid != g.seqid:
+            seqid = g.seqid
+            print("Processing %s" % seqid)
         #print(g.id, g.seqid, g.start, g.end)
         gene_cov = count_coverage(g.seqid, g.start, g.end, bam)
         gene_cov_dict[gene_name] = gene_cov
@@ -67,7 +72,9 @@ def parse_args():
 
 def main():
     args = parse_args()
-    gffutils.create_db(args.gff, 'db')
+    if not os.path.exists('db'):
+        gffutils.create_db(args.gff, 'db')
+    print("Loading genedb")
     gffutils_db = gffutils.FeatureDB('db', keep_order=True)
     bam = pysam.AlignmentFile(args.bam, "rb")
     genome= args.genome

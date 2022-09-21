@@ -1,5 +1,4 @@
-#!/usr/bin/python
-from Bio import SeqIO
+#!/usr/bin/env python 
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 import pandas as pd

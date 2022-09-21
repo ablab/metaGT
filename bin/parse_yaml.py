@@ -1,4 +1,6 @@
-#!/usr/bin/python
+
+#!/usr/bin/env python 
+
 import sys
 from yaml import load
 import yaml
