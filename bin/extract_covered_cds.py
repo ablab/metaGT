@@ -15,51 +15,45 @@ import sys
 import argparse
 
 
-def count_coverage(chr_id, start, end, bam, gene_seq):
+def count_coverage(chr_id, start, end, bam):
     gene_len = end - start + 1
     coverage = [0 for _ in range(gene_len)]
     for a in bam.fetch(chr_id, start - 1, end):
         covered_start = max(a.reference_start + 1, start)
         covered_end = min(a.reference_end + 1, end)
         i = -1
-        aligned_pairs = a.get_aligned_pairs(with_seq = True)
         for pos in range(covered_start, covered_end):
             coverage[pos - start] += 1
             i += 1
-            if aligned_pairs[covered_start-a.reference_start+a.query_alignment_start-1+i][2] is None:
-                continue
-            else:
-                gene_seq[pos - start] = aligned_pairs[covered_start-a.reference_start+a.query_alignment_start-1+i][2]
 
-    return 1 - (coverage.count(0) / gene_len), gene_seq
+    return 1 - (coverage.count(0) / gene_len)
 
 
 def get_gene_stats(gene_db, bam, genome_fasta, threshold, file):
     gene_cov_dict = {}
-    gene_seq_dict = {}
+    gene_records = []
     strand = True
     for g in gene_db.features_of_type('CDS', order_by=('seqid', 'start')):
         gene_name = g.id
         if g.strand == '-':
             strand = False
-        gene_seq = list(g.sequence(genome_fasta, use_strand = strand))
         #print(g.id, g.seqid, g.start, g.end)
-        gene_cov, gene_seq = count_coverage(g.seqid, g.start, g.end, bam, gene_seq)
+        gene_cov = count_coverage(g.seqid, g.start, g.end, bam)
         gene_cov_dict[gene_name] = gene_cov
         if gene_cov > threshold:
-            extract_genes(gene_seq, g, file)
+            gene_seq = g.sequence(genome_fasta, use_strand=strand)
+            gene_records.append(extract_genes(gene_seq, g))
     print("Genes processed %d" % len(gene_cov_dict))
-    return gene_cov_dict
+    return gene_cov_dict, gene_records
 
 
-def extract_genes(gene_seq, gene, file):
+def extract_genes(gene_seq, gene):
     name = ''
     if 'Name' in gene.attributes:
         name = gene.attributes["Name"][0]
 
-    rec = SeqRecord(Seq("".join(str(x) for x in gene_seq)), id=gene.id, description=name)
-    SeqIO.write(rec, file, "fasta")
-
+    rec = SeqRecord(Seq(gene_seq), id=gene.id, description=name)
+    return rec
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -79,7 +73,8 @@ def main():
     genome= args.genome
     t = float(args.threshold)
     f = open(args.output + '.fasta', 'w')
-    gene_cov_dict = get_gene_stats(gffutils_db, bam, genome, t, f)
+    gene_cov_dict, gene_records = get_gene_stats(gffutils_db, bam, genome, t, f)
+    SeqIO.write(gene_records, f, "fasta")
     with open(args.output+'.csv', 'w') as outf:
         for k in sorted(gene_cov_dict.keys()):
             outf.write("%s\t%.3f\n" % (k, gene_cov_dict[k]))
