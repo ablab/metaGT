@@ -6,6 +6,7 @@ options        = initOptions(params.options)
 
 process COVERED_CDS {
     tag "$meta.id"
+    time { 40.hour }
 
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
