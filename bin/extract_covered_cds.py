@@ -14,6 +14,7 @@ import sys
 import argparse
 import os
 from traceback import print_exc
+from multiprocessing import Pool
 
 
 def count_coverage(chr_id, start, end, bam):
@@ -30,24 +31,32 @@ def count_coverage(chr_id, start, end, bam):
     return 1 - (coverage.count(0) / gene_len)
 
 
-def get_gene_stats(gene_db, bam, genome_fasta, threshold, file):
+def process_single_gene(g, bam, genome_fasta, threshold):
+    gene_name = g.id
+    strand = True
+    if g.strand == '-':
+        strand = False
+
+    gene_cov = count_coverage(g.seqid, g.start, g.end, bam)
+    gene_rec = None
+    if gene_cov > threshold:
+        gene_seq = g.sequence(genome_fasta, use_strand=strand)
+        gene_rec = extract_genes(gene_seq, g)
+    return gene_name, gene_cov, gene_rec
+
+
+def process_genes(gene_db, bam, genome_fasta, threshold, threads):
     gene_cov_dict = {}
     gene_records = []
-    strand = True
-    seqid = None
-    for g in gene_db.features_of_type('CDS', order_by=('seqid', 'start')):
-        gene_name = g.id
-        if g.strand == '-':
-            strand = False
-        if seqid != g.seqid:
-            seqid = g.seqid
-            print("Processing %s" % seqid)
-        #print(g.id, g.seqid, g.start, g.end)
-        gene_cov = count_coverage(g.seqid, g.start, g.end, bam)
-        gene_cov_dict[gene_name] = gene_cov
-        if gene_cov > threshold:
-            gene_seq = g.sequence(genome_fasta, use_strand=strand)
-            gene_records.append(extract_genes(gene_seq, g))
+    pool = Pool(threads)
+    results = pool.starmap(process_single_gene,
+                           [(g, bam, genome_fasta, threshold)
+                            for g in gene_db.features_of_type('CDS', order_by=('seqid', 'start'))])
+    pool.close()
+    pool.join()
+    for res in results:
+        gene_records.append(res[2])
+        gene_cov_dict[res[0]] = res[1]
     print("Genes processed %d" % len(gene_cov_dict))
     return gene_cov_dict, gene_records
 
@@ -80,7 +89,7 @@ def main():
     genome= args.genome
     t = float(args.threshold)
     f = open(args.output + '.fasta', 'w')
-    gene_cov_dict, gene_records = get_gene_stats(gffutils_db, bam, genome, t, f)
+    gene_cov_dict, gene_records = process_genes(gffutils_db, bam, genome, t, 16)
     SeqIO.write(gene_records, f, "fasta")
     with open(args.output+'.csv', 'w') as outf:
         for k in sorted(gene_cov_dict.keys()):
