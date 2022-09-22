@@ -20,7 +20,7 @@ from multiprocessing import Pool
 def count_coverage(chr_id, start, end, bam):
     gene_len = end - start + 1
     coverage = [0 for _ in range(gene_len)]
-    for a in bam.fetch(chr_id, start - 1, end):
+    for a in pysam.AlignmentFile(bam, "rb").fetch(chr_id, start - 1, end):
         covered_start = max(a.reference_start + 1, start)
         covered_end = min(a.reference_end + 1, end)
         i = -1
@@ -85,11 +85,10 @@ def main():
         gffutils.create_db(args.gff, 'db')
     print("Loading genedb")
     gffutils_db = gffutils.FeatureDB('db', keep_order=True)
-    bam = pysam.AlignmentFile(args.bam, "rb")
     genome= args.genome
     t = float(args.threshold)
     f = open(args.output + '.fasta', 'w')
-    gene_cov_dict, gene_records = process_genes(gffutils_db, bam, genome, t, 16)
+    gene_cov_dict, gene_records = process_genes(gffutils_db, args.bam, genome, t, 16)
     SeqIO.write(gene_records, f, "fasta")
     with open(args.output+'.csv', 'w') as outf:
         for k in sorted(gene_cov_dict.keys()):
