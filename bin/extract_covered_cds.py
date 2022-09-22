@@ -55,7 +55,8 @@ def process_genes(gene_db, bam, genome_fasta, threshold, threads):
     pool.close()
     pool.join()
     for res in results:
-        gene_records.append(res[2])
+        if res[2] is not None:
+            gene_records.append(res[2])
         gene_cov_dict[res[0]] = res[1]
     print("Genes processed %d" % len(gene_cov_dict))
     return gene_cov_dict, gene_records
