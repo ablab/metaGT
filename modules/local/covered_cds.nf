@@ -31,8 +31,8 @@ process COVERED_CDS {
     """
     samtools index $bam
 
-    extract_covered_cds.py --gff $gff --bam $bam --genome $genome --output ${prefix}_covered_cds
-    extract_unaligned_transcripts.py $bam $transcriptome unaligned.transcripts.fasta
+    extract_covered_cds.py --threads $task.cpus --gff $gff --bam $bam --genome $genome --output ${prefix}_covered_cds
+    extract_unused.py ${prefix}_covered_cds.used_contigs.list $transcriptome unaligned.transcripts.fasta
     """
 }
 

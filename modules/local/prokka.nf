@@ -25,7 +25,7 @@ process PROKKA {
     
     """
     [ ! -f  ${prefix}.fasta ] && ln -s $fasta ${prefix}.fasta
-    prokka  ${prefix}.fasta --outdir ./ --force --prefix ${prefix} --metagenome 
+    prokka  ${prefix}.fasta --outdir ./ --force --prefix ${prefix} --metagenome --cpus $task.cpus
     
     """
 }

@@ -27,7 +27,7 @@ process MINIMAP2 {
 
     """
 
-    minimap2 -aY --MD $genome $transcriptome > ${prefix}.align.sam
+    minimap2 -t $task.cpus -aY --MD $genome $transcriptome > ${prefix}.align.sam
 
     samtools sort ${prefix}.align.sam -o ${prefix}.align.sorted.bam
 

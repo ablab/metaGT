@@ -28,7 +28,7 @@ process MMSEQS_CLUSTER {
     def prefix  = params.prefix ? "${params.prefix}" : "${meta.id}"
     """
     cat $cov_transcripts $cds_from_unaligned > all.fasta
-    mmseqs easy-linclust all.fasta res tmp --min-seq-id ${params.cluster_idy}
+    mmseqs easy-linclust all.fasta res tmp --min-seq-id ${params.cluster_idy}  --cluster-mode 0 --seq-id-mode 2 --threads  $task.cpus --cov-mode 1
     mv res_rep_seq.fasta ${prefix}.rep_seq.fasta
     """
 }
