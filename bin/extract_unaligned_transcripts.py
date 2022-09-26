@@ -14,7 +14,7 @@ align.close()
 
 new_table = []
 for i in table:
-    if int(i.split("_")[3]) > 300 and float(i.split("_")[5]) > 5:
+    if int(i.split("_")[3]) > 300 and float(i.split("_")[5]) > 1:
         new_table.append(i)
 
 transcripts = SeqIO.parse(sys.argv[2], 'fasta')

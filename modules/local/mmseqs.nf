@@ -8,9 +8,9 @@ process MMSEQS_CLUSTER {
     tag "$meta.id"
 
     input:
-    
+
     tuple val(meta), path(cov_transcripts)
-    tuple val(meta_t), path(cds_from_all_transcripts)
+    tuple val(meta_t), path(cds_from_unaligned)
 
     output:
     path '*.rep_seq.fasta', emit: rep_seq
@@ -27,8 +27,8 @@ process MMSEQS_CLUSTER {
     script:
     def prefix  = params.prefix ? "${params.prefix}" : "${meta.id}"
     """
-    cat $cov_transcripts $cds_from_all_transcripts > all.fasta
-    mmseqs easy-linclust all.fasta res tmp --min-seq-id ${params.cluster_idy}
+    cat $cov_transcripts $cds_from_unaligned > all.fasta
+    mmseqs easy-linclust $cov_transcripts res tmp --min-seq-id ${params.cluster_idy}
     mv res_rep_seq.fasta ${prefix}.rep_seq.fasta
     """
 }

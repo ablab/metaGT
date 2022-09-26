@@ -16,11 +16,13 @@ process COVERED_CDS {
     tuple val(meta), path(bam)
     tuple val(meta), path (gff)
     tuple val(meta), path (genome)
+    tuple val(meta), path (transcriptome)
 
 
     output:
     tuple val(meta), path('*.csv'), emit: table
-    tuple val(meta), path('*.fasta'), emit: fasta
+    tuple val(meta), path('*covered_cds.fasta'), emit: fasta
+    tuple val(meta), path('*transcripts.fasta'), emit: unaligned
 
     script:
     def prefix  = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
@@ -29,7 +31,8 @@ process COVERED_CDS {
     """
     samtools index $bam
 
-    extract_covered_cds.py --gff $gff --bam $bam --genome $genome --output ${prefix}_covered_cds 
+    extract_covered_cds.py --gff $gff --bam $bam --genome $genome --output ${prefix}_covered_cds
+    extract_unaligned_transcripts.py $bam $transcriptome unaligned.transcripts.fasta
     """
 }
 

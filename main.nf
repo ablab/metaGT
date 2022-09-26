@@ -164,10 +164,11 @@ workflow {
 
     
     
-    COVERED_CDS(ch_align, ch_genome_gff, ch_genome)
-    TRANSDECODER(ch_transcriptome)
-    MMSEQS_CLUSTER(COVERED_CDS.out.fasta, TRANSDECODER.out.cds) 
+    COVERED_CDS(ch_align, ch_genome_gff, ch_genome, ch_transcriptome)
 
+    TRANSDECODER(COVERED_CDS.out.unaligned)
+    MMSEQS_CLUSTER(COVERED_CDS.out.fasta, TRANSDECODER.out.cds)
+    
     if (params.rna_reads) {
         KALLISTO_INDEX(MMSEQS_CLUSTER.out.rep_seq)
         KALLISTO_QUANT(KALLISTO_INDEX.out.index, input_rna_reads)
