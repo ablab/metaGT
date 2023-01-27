@@ -4,7 +4,11 @@ Version: see VERSION
 
 ## Introduction
 
-**metaGT** is a bioinformatics analysis pipeline used for improving and quantification metatranscriptome assembly using metagenome data. The pipeline supports Illumina sequencing data and complete metagenome and metatranscriptome assemblies. The pipeline involves the alignment of metatranscriprome assembly to the metagenome assembly with further extracting CDSs, which are covered by transcripts.
+**MetaGT** is a bioinformatics analysis pipeline used for improving and quantification 
+metatranscriptome assembly using metagenome data. The pipeline supports Illumina sequencing 
+data and complete metagenome and metatranscriptome assemblies. The pipeline involves the 
+alignment of metatranscriprome assembly to the metagenome assembly with further extracting CDSs,
+which are covered by transcripts.
 
 The pipeline is built using Nextflow, a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible. The Nextflow DSL2 implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies.
 
@@ -18,13 +22,19 @@ The pipeline is built using Nextflow, a workflow tool to run tasks across multip
 
 2. Install any of [`Conda`](https://conda.io/miniconda.html) for full pipeline reproducibility 
 
-3. Download the pipeline and test it on a minimal dataset with a single command:
+3. Download the pipeline, e.g. by cloning metaGT GitHub repository:
 
     ```bash
-    nextflow run metaGT -profile test,<conda>
+    git clone git@github.com:ablab/metaGT.git
     ```
+   
+4. Test it on a minimal dataset by running:
 
-4. Start running your own analysis!
+    ```bash
+    nextflow run metaGT -profile test,conda
+    ```
+   
+5. Start running your own analysis!
     > Typical command for analysis using reads:
 
     ```bash
@@ -56,6 +66,13 @@ By default, the pipeline currently performs the following:
 * Clustering covered CDS and CDS from unaligned transcripts (`MMseqs2`)
 * Quantifying abundances of transcripts (`kallisto`)
 
-## Credits
+## Citation
 
-metaGT was originally written by Daria Shafranskaya, Andrey Prjibelski.
+MetaGT was developed by Daria Shafranskaya and Andrey Prjibelski.
+If you use it in your research please cite:
+
+[MetaGT: A pipeline for de novo assembly of metatranscriptomes with the aid of metagenomic data](https://doi.org/10.3389/fmicb.2022.981458)
+
+## Feedback and bug report
+
+If you have any questions, please leave an issue at out [GitHub page](https://github.com/ablab/metaGT/issues).
